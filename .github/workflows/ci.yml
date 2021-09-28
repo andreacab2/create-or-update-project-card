@@ -117,30 +117,30 @@ jobs:
         uses: ./
         with:
           token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
-          project-location: create-or-update-project-card
+          project-location: andreacab2org
           project-name: '[CI] ${{ matrix.target }}'
           column-name: Test column 1
-          repository: create-or-update-project-card/test-fixture
+          repository: andreacab2org/test-fixture
           issue-number: 1
 
       - name: Org project - card exists
         uses: ./
         with:
           token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
-          project-location: create-or-update-project-card
+          project-location: andreacab2org
           project-name: '[CI] ${{ matrix.target }}'
           column-name: Test column 1
-          repository: create-or-update-project-card/test-fixture
+          repository: andreacab2org/test-fixture
           issue-number: 1
 
       - name: Org project - move card
         uses: ./
         with:
           token: ${{ secrets.TEST_CASE_MACHINE_USER_PAT }}
-          project-location: create-or-update-project-card
+          project-location: andreacab2org
           project-name: '[CI] ${{ matrix.target }}'
           column-name: Test column 2
-          repository: create-or-update-project-card/test-fixture
+          repository: andreacab2org/test-fixture
           issue-number: 1
 
       - name: Org project - delete card

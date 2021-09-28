@@ -1,0 +1,24 @@
+name: Move issues to in progress
+on:
+  push:
+    branches:
+      - feature-**/([0-9]+-)+
+jobs:
+  move_card_to_in_progress:
+    runs-on: ubuntu-latest
+    name: Move issues to the in progress column
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Extract issue number
+      shell: bash
+      run: echo ::set-output name=issue_nums::$(echo ${${GITHUB_REF##*/}//-/,})
+      id: vars
+    - name: Move issue to in progress
+      uses: peter-evans/create-or-update-project-card@v1
+      with:
+        project-location: andreacab2
+        project-name: test
+        column-name: 'In Progress'
+        issue-number: ${{ steps.vars.outputs.issue_nums }}
+        token: ${{ secrets.GHPROJECT_TOKEN }}

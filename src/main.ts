@@ -190,43 +190,51 @@ async function run(): Promise<void> {
     core.debug(`Column: ${inspect(column)}`)
     if (!column) throw 'No column matching the supplied input found.'
 
-    const issueNumbers = inputs.issueNumber.split(',').map(numberStr => Number(numberStr.trim()));
-    await Promise.all(issueNumbers.map(async (issueNumber: number) => {
-      const content = await getContent(
-        octokit,
-        inputs.repository,
-        issueNumber
-      )
-      core.debug(`Content: ${inspect(content)}`)
-  
-      const existingCard = await findCardInColumns(octokit, columns, content.url)
-      if (existingCard) {
-        core.debug(`Existing card: ${inspect(existingCard)}`)
-        core.info(
-          `An existing card is already associated with ${content.type} #${issueNumber}`
+    const issueNumbers = inputs.issueNumber
+      .split(',')
+      .map(numberStr => Number(numberStr.trim()))
+    await Promise.all(
+      issueNumbers.map(async (issueNumber: number) => {
+        const content = await getContent(
+          octokit,
+          inputs.repository,
+          issueNumber
         )
-        core.setOutput('card-id', existingCard.id)
-  
-        if (existingCard.columnUrl != column.url) {
-          core.info(`Moving card to column '${inputs.columnName}'`)
-          await octokit.rest.projects.moveCard({
-            card_id: existingCard.id,
-            position: 'top',
-            column_id: column.id
+        core.debug(`Content: ${inspect(content)}`)
+
+        const existingCard = await findCardInColumns(
+          octokit,
+          columns,
+          content.url
+        )
+        if (existingCard) {
+          core.debug(`Existing card: ${inspect(existingCard)}`)
+          core.info(
+            `An existing card is already associated with ${content.type} #${issueNumber}`
+          )
+          core.setOutput('card-id', existingCard.id)
+
+          if (existingCard.columnUrl != column.url) {
+            core.info(`Moving card to column '${inputs.columnName}'`)
+            await octokit.rest.projects.moveCard({
+              card_id: existingCard.id,
+              position: 'top',
+              column_id: column.id
+            })
+          }
+        } else {
+          core.info(
+            `Creating card associated with ${content.type} #${issueNumber}`
+          )
+          const {data: card} = await octokit.rest.projects.createCard({
+            column_id: column.id,
+            content_id: content.id,
+            content_type: content.type
           })
+          core.setOutput('card-id', card.id)
         }
-      } else {
-        core.info(
-          `Creating card associated with ${content.type} #${issueNumber}`
-        )
-        const {data: card} = await octokit.rest.projects.createCard({
-          column_id: column.id,
-          content_id: content.id,
-          content_type: content.type
-        })
-        core.setOutput('card-id', card.id)
-      }
-    }));
+      })
+    )
   } catch (error: any) {
     core.debug(inspect(error))
     core.setFailed(error.message)
